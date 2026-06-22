@@ -1,11 +1,19 @@
-# LangSync
-LangSync is a simple translation engine that supports multiple source and target languages. It also includes integrations with popular development tools like GitHub and Jenkins.
+# AutoTrans
+A Python library for translating localization strings in 50+ languages.
 
 ## Features
-- Support for multiple source languages
-- Support for multiple target languages
-- Basic translation accuracy
-- Integration with GitHub and Jenkins
 
-## Installation
-Clone the repository and install the dependencies:
+* Translate text in multiple languages
+* Detect language-specific nuances
+* Fallback to human review when confidence is low
+
+## Usage
+
+1. Install the library using `poetry install`
+2. Import the library in your Python script: `from autotrans import AutoTrans`
+3. Create an instance of the `AutoTrans` class: `autotrans = AutoTrans(["en", "fr"])`
+4. Use the `translate` method to translate text: `translation = autotrans.translate("Hello, world!", "en")`
+
+## Testing
+
+Run the tests using `pytest`
