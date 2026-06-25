@@ -1,54 +1,21 @@
-import os
-import pytest
-from lang_sync import Config, load_config, extract_files
-import logging
+from lang_sync import LangSync, TranslationFile
 
-@pytest.fixture
-def temp_config_file(tmp_path):
-    config_file = tmp_path / 'lang-sync.yaml'
-    with open(config_file, 'w') as file:
-        file.write(''' 
-include_patterns:
-  - "*.py"
-  - "*.java"
-exclude_patterns:
-  - "test*"
-  - "example*"
-''')
-    return config_file
+def test_create_branch():
+    lang_sync = LangSync("test-branch", [])
+    assert lang_sync.create_branch() == "translations/test-branch"
 
-def test_load_config(temp_config_file):
-    config = load_config(temp_config_file)
-    assert config.include_patterns == ['*.py', '*.java']
-    assert config.exclude_patterns == ['test*', 'example*']
+def test_commit_translated_files():
+    lang_sync = LangSync("test-branch", [TranslationFile("file1.txt", "content1")])
+    assert lang_sync.commit_translated_files() == "Translated files for test-branch"
 
-def test_load_config_default():
-    config = load_config('non_existent_file.yaml')
-    assert config.include_patterns == ['*.py', '*.java', '*.cpp']
-    assert config.exclude_patterns == ['test*', 'example*']
+def test_delete_branch():
+    lang_sync = LangSync("test-branch", [])
+    # Test that delete_branch doesn't raise an exception
+    lang_sync.delete_branch()
 
-def test_extract_files(temp_config_file, tmp_path):
-    # Create test files
-    test_file = tmp_path / 'test.py'
-    example_file = tmp_path / 'example.java'
-    normal_file = tmp_path / 'normal.py'
-    with open(test_file, 'w') as file:
-        file.write('Test file')
-    with open(example_file, 'w') as file:
-        file.write('Example file')
-    with open(normal_file, 'w') as file:
-        file.write('Normal file')
-    config = load_config(temp_config_file)
-    extracted_files = extract_files(tmp_path, config)
-    assert len(extracted_files) == 1
-    assert extracted_files[0] == str(normal_file)
-
-def test_extract_files_empty_directory(tmp_path):
-    config = Config(include_patterns=['*.py'], exclude_patterns=[])
-    extracted_files = extract_files(tmp_path, config)
-    assert len(extracted_files) == 0
-
-def test_extract_files_no_config_file(tmp_path):
-    config = load_config('non_existent_file.yaml')
-    extracted_files = extract_files(tmp_path, config)
-    assert len(extracted_files) == 0
+def test_main():
+    # Test that main doesn't raise an exception
+    import sys
+    sys.argv = ["lang_sync.py", "--branch-name", "test-branch", "--translated-files", "file1.txt:content1"]
+    from src.lang_sync import main
+    main()

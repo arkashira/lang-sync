@@ -1,53 +1,43 @@
 import argparse
-import dataclasses
-import logging
-import os
-import re
+import json
+from dataclasses import dataclass
 from typing import List
 
-@dataclasses.dataclass
-class Config:
-    include_patterns: List[str]
-    exclude_patterns: List[str]
+@dataclass
+class TranslationFile:
+    filename: str
+    content: str
 
-def load_config(file_path: str) -> Config:
-    try:
-        with open(file_path, 'r') as file:
-            import yaml
-            config_data = yaml.safe_load(file)
-            if config_data is None:
-                config_data = {}
-            return Config(
-                include_patterns=config_data.get('include_patterns', []),
-                exclude_patterns=config_data.get('exclude_patterns', [])
-            )
-    except FileNotFoundError:
-        logging.warning(f"Config file {file_path} not found. Using default config.")
-        return Config(
-            include_patterns=['*.py', '*.java', '*.cpp'],
-            exclude_patterns=['test*', 'example*']
-        )
+class LangSync:
+    def __init__(self, branch_name: str, translated_files: List[TranslationFile]):
+        self.branch_name = branch_name
+        self.translated_files = translated_files
 
-def extract_files(directory: str, config: Config) -> List[str]:
-    extracted_files = []
-    for root, dirs, files in os.walk(directory):
-        for file in files:
-            file_path = os.path.join(root, file)
-            if any(re.match(pattern.replace('*', '.*'), file) for pattern in config.include_patterns):
-                if any(re.match(pattern.replace('*', '.*'), file) for pattern in config.exclude_patterns):
-                    logging.info(f"Excluding file {file_path}")
-                    continue
-                extracted_files.append(file_path)
-    return extracted_files
+    def create_branch(self) -> str:
+        return f"translations/{self.branch_name}"
 
-def main():
-    parser = argparse.ArgumentParser(description='Lang-sync extractor')
-    parser.add_argument('--config', default='lang-sync.yaml', help='Path to config file')
-    parser.add_argument('--directory', default='.', help='Directory to extract files from')
+    def commit_translated_files(self) -> str:
+        commit_message = f"Translated files for {self.branch_name}"
+        return commit_message
+
+    def delete_branch(self) -> None:
+        print(f"Deleting branch translations/{self.branch_name}")
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Lang Sync")
+    parser.add_argument("--branch-name", type=str, required=True)
+    parser.add_argument("--translated-files", type=str, nargs="+", required=True)
     args = parser.parse_args()
-    config = load_config(args.config)
-    extracted_files = extract_files(args.directory, config)
-    print(extracted_files)
 
-if __name__ == '__main__':
+    translated_files = []
+    for file in args.translated_files:
+        filename, content = file.split(":", 1)
+        translated_files.append(TranslationFile(filename, content))
+
+    lang_sync = LangSync(args.branch_name, translated_files)
+    print(lang_sync.create_branch())
+    print(lang_sync.commit_translated_files())
+    lang_sync.delete_branch()
+
+if __name__ == "__main__":
     main()
