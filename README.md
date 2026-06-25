@@ -1,9 +1,24 @@
-# Lang-sync
-Lang-sync is a tool for extracting files based on configurable patterns.
+# AutoTrans CI
+
+AutoTrans CI is a GitHub Actions integration that triggers translation jobs automatically on code merges.
 
 ## Usage
-1. Create a `lang-sync.yaml` file with include and exclude patterns.
-2. Run `python -m lang_sync` to extract files.
 
-## Configuration
-The `lang-sync.yaml` file should contain the following structure:
+1. Install the AutoTrans CI action in your GitHub repository.
+2. Configure the action to trigger on code merges.
+3. The action will automatically trigger a translation job and update the job status.
+
+## Features
+
+* Triggers translation jobs automatically on code merges
+* Updates job status in real-time
+* Lists available actions
+
+## Requirements
+
+* Python 3.8+
+* GitHub Actions
+
+## Testing
+
+* Run `pytest` to execute the tests
